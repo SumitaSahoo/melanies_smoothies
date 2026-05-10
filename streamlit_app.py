@@ -1,40 +1,40 @@
 # Import python packages
 import streamlit as st
 from snowflake.snowpark.functions import col
-from snowflake.snowpark.context import get_active_session
 
-# UI
-st.title(":cup_with_straw: Customize Your Smoothies :cup_with_straw:")
-st.write("**Add your favourite Fruits to the Smoothies**")
+# Write directly to the app
+st.title( f":cup_with_straw: Cutomize Your Smoothies:cup_with_straw:")
+st.write(
+  """
+    **Add your favourite Fruits to the Smoothies**"""
+)
 
-name_on_order = st.text_input('Name on the Smoothies:')
+name_on_order=st.text_input('Name on the Smoothies:')
 st.write('The name on your Smoothies is:', name_on_order)
-
-# ✅ ONLY this session
+cnx = st.connection("snowflake")
+session = cnx.session()
 session = get_active_session()
+my_dataframe = session.table("smoothies.public.fruit_options").select(col('Fruit_Name'))
+#st.dataframe(data=my_dataframe, use_container_width=True)
 
-# Load data
-my_dataframe = session.table("smoothies.public.fruit_options").select(col('FRUIT_NAME'))
-
-# Convert to list (IMPORTANT FIX)
-fruit_list = [row["FRUIT_NAME"] for row in my_dataframe.collect()]
-
-# Multiselect
-ingredient_list = st.multiselect('Choose up to 5 ingredients:', fruit_list)
+ingredient_list=st.multiselect('choose upto 5 ingredient:',my_dataframe)
 
 if ingredient_list:
-    st.write('You chose:', ingredient_list)
+    st.write('you choose:',ingredient_list)
+    st.text(ingredient_list)
+    ingredient_string=''
+    for fruit_chosen in ingredient_list:
+        ingredient_string += fruit_chosen + ' '
+    st.write(ingredient_string)
 
-    ingredient_string = ' '.join(ingredient_list)
+    my_insert_stmt = """ insert into smoothies.public.orders(ingredients,name_on_order)
+                    values ('""" + ingredient_string + """','""" + name_on_order + """')""" +';'
 
-    # ✅ Safe insert (better approach)
-    time_to_insert = st.button('Submit Order')
+    #st.write(my_insert_stmt)
+    #st.stop()
+    time_to_insert=st.button('Submit Order')
+    
 
     if time_to_insert:
-        session.sql(f"""
-            INSERT INTO smoothies.public.orders (ingredients, name_on_order)
-            VALUES ('{ingredient_string}', '{name_on_order}')
-        """).collect()
-
-        st.success('Your Smoothie is ordered!', icon="✅")
-``
+       session.sql(my_insert_stmt).collect()
+       st.success('Your Smoothie is ordered!', icon="✅")
