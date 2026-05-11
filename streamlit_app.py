@@ -24,6 +24,8 @@ if ingredient_list:
     ingredient_string=''
     for fruit_chosen in ingredient_list:
         ingredient_string += fruit_chosen + ' '
+        smoothiefroot_response = requests.get("https://my.smoothiefroot.com/api/fruit/watermelon")
+        sf_df = st.dataframe(data=smoothiefroot_response.json(), use_container_width=True) 
     st.write(ingredient_string)
 
     my_insert_stmt = """ insert into smoothies.public.orders(ingredients,name_on_order)
@@ -40,13 +42,5 @@ if ingredient_list:
 
 import streamlit as st
 import requests
-
-url = "https://my.smoothiefroot.com/api/fruit/watermelon"
-
-smoothiefroot_response = requests.get(url)
-
-# ✅ Display properly
-if smoothiefroot_response.status_code == 200:
-    st.json(smoothiefroot_response.json())
-else:
-    st.error("API call failed")
+smoothiefroot_response = requests.get("https://my.smoothiefroot.com/api/fruit/watermelon")
+sf_df = st.dataframe(data=smoothiefroot_response.json(), use_container_width=True)
