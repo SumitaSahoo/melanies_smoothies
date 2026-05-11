@@ -38,6 +38,16 @@ if ingredient_list:
        session.sql(my_insert_stmt).collect()
        st.success('Your Smoothie is ordered!', icon="✅")
 
-import requests  
-smoothiefroot_response = requests.get('https://my.smoothiefroot.com/api/fruit/watermelon')
-sst.json(smoothiefroot_response.json())
+
+import requests
+
+url = "https://my.smoothiefroot.com/api/fruit/watermelon"
+
+smoothiefroot_response = requests.get(url)
+
+# ✅ Display properly
+if smoothiefroot_response.status_code == 200:
+    st.json(smoothiefroot_response.json())
+else:
+    st.error("API call failed")
+
